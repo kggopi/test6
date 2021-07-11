@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:java="http://www.mulesoft.org/schema/mule/java"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="7191c337-e3a9-4444-a910-f8bebc9ada20" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="959f71f2-abaa-4414-bc08-273fd5100266">
+		<http:request-connection host="sandbox.webcomcpq.com" protocol="HTTPS"/>
+	</http:request-config>
+	<flow name="testFlow" doc:id="3da32f8c-a3d3-49da-bd33-61a40ef8acbc" >
+		<http:listener doc:name="Listener" doc:id="360f6ab3-8d54-4dfe-934c-8c462be9042d" config-ref="HTTP_Listener_config" path="/test"/>
+		<http:request method="POST" doc:name="Request" doc:id="76278aa2-e682-483e-b23b-2801938ff32b" config-ref="HTTP_Request_configuration" path="/customapi/executescript">
+			<http:body ><![CDATA[#[{"Param":'{"ProductID":297}'}]]]></http:body>
+			<http:query-params ><![CDATA[#[{
+	password : "Apriori!123",
+	domain : "autodeskinc_dev",
+	scriptName : "GetOfferAPi",
+	ProductID : 297,
+	username : "t_smili_integration"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="ed443eb7-252a-45e9-a005-24aae672e056" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="testFlow1" doc:id="e874c35c-e92a-4db9-aa5e-0afbd1691141" >
+		<scripting:execute engine="ECMAScript" doc:name="Execute" doc:id="7d317f1f-abe9-4522-8b1d-c868be7c74f1" />
+	</flow>
+	<sub-flow name="testSub_Flow1" doc:id="9b6924e5-809e-4548-a2bb-dcc5014c428a" />
+	<sub-flow name="testSub_Flow" doc:id="aaa5dc99-8c90-49b0-9780-c6293a6f0a07" >
+		<java:invoke-static doc:id="ada1d501-6166-4a64-8510-206991db737d" class="com.mulesoft.tools.SecurePropertiesTool" method="applyOverString(String,String,String,String,boolean,String)">
+			<java:args><![CDATA[#[{
+arg0 : "encrypt",
+arg1 : "Blowfish",
+arg2 : "CBC",
+arg3 : "mulesoftDKIDII356478cvbnmklghj",
+arg4 : true,
+arg5 : payload
+}]]]></java:args>
+		</java:invoke-static>
+	</sub-flow>
+</mule>
